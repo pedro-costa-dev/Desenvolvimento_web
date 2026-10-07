@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vh vs % — Como o CSS mede o espaço</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F1117;
+    --surface: #171A23;
+    --surface-2: #1E222D;
+    --border: #2A2F3D;
+    --text: #E7E9EE;
+    --muted: #9098AA;
+    --vh: #6FE3C4;
+    --vh-dim: #1E3A34;
+    --pc: #F2A65A;
+    --pc-dim: #3A2E1C;
+    --danger: #FF6B6B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    line-height:1.6;
+    padding-bottom:80px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .wrap{
+    max-width:880px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+  header.page{
+    padding:64px 24px 40px;
+    border-bottom:1px solid var(--border);
+  }
+  header.page h1{
+    font-size:clamp(28px,5vw,42px);
+    line-height:1.15;
+    margin:0 0 16px;
+    max-width:14ch;
+  }
+  header.page p{
+    color:var(--muted);
+    max-width:56ch;
+    font-size:16px;
+    margin:0 0 24px;
+  }
+  .legend{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 14px;
+    border-radius:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    border:1px solid var(--border);
+  }
+  .chip .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .chip.vh{background:var(--vh-dim); color:var(--vh); border-color:#2b5148;}
+  .chip.vh .dot{background:var(--vh);}
+  .chip.pc{background:var(--pc-dim); color:var(--pc); border-color:#4a3a22;}
+  .chip.pc .dot{background:var(--pc);}
+
+  section{
+    padding:56px 24px;
+    border-bottom:1px solid var(--border);
+  }
+  section:last-of-type{border-bottom:none;}
+  section .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 8px;
+  }
+  section h2{
+    font-size:24px;
+    margin:0 0 14px;
+  }
+  section > .wrap > p.lead{
+    color:var(--muted);
+    max-width:64ch;
+    margin:0 0 32px;
+  }
+
+  /* --- Section 1: parent vs viewport demo --- */
+  .lab-frame{
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--surface);
+    padding:24px;
+  }
+  .slider-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .slider-row label{
+    font-size:13px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+    white-space:nowrap;
+  }
+  input[type=range]{
+    flex:1;
+    min-width:140px;
+    accent-color:#8b93a5;
+  }
+  .parent-box{
+    border:2px dashed var(--border);
+    border-radius:8px;
+    background:var(--surface-2);
+    display:flex;
+    gap:12px;
+    padding:12px;
+    transition:height .12s ease;
+    position:relative;
+  }
+  .parent-box::before{
+    content:'elemento pai';
+    position:absolute;
+    top:-11px;
+    left:12px;
+    background:var(--surface-2);
+    padding:0 8px;
+    font-size:11px;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--muted);
+  }
+  .child-box{
+    flex:1;
+    border-radius:6px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+  .child-box.pc-box{
+    height:50%;
+    background:var(--pc-dim);
+    border:1px solid #4a3a22;
+    color:var(--pc);
+  }
+  .child-box.vh-box{
+    height:50vh;
+    max-height:100%;
+    background:var(--vh-dim);
+    border:1px solid #2b5148;
+    color:var(--vh);
+  }
+  .child-box .label{font-weight:600; margin-bottom:4px;}
+  .child-box .px{color:var(--muted); font-size:12px;}
+  .note{
+    margin-top:16px;
+    font-size:14px;
+    color:var(--muted);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 16px;
+  }
+  .note b{color:var(--text);}
+
+  /* --- Section 2: exemplos A/B --- */
+  .demo-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:28px;
+  }
+  @media(min-width:760px){
+    .demo-grid{grid-template-columns:1fr 1fr;}
+  }
+  .demo-card{
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .demo-card .demo-head{
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--border);
+  }
+  .demo-card .demo-head h3{
+    margin:0;
+    font-size:15px;
+  }
+  .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  .badge.no-scroll{background:#3a2222; color:var(--danger);}
+  .badge.scroll{background:var(--vh-dim); color:var(--vh);}
+  .demo-card iframe{
+    display:block;
+    width:100%;
+    height:220px;
+    border:none;
+    background:#fff;
+  }
+  .demo-card pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:#c7cbd6;
+    background:var(--surface-2);
+    overflow-x:auto;
+    border-top:1px solid var(--border);
+  }
+  .demo-card pre .k{color:var(--vh);}
+  .demo-card pre .v{color:var(--pc);}
+
+  /* --- Section 3: laboratório interativo --- */
+  .lab-controls{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  select{
+    width:100%;
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+  .lab-preview{
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .lab-preview iframe{
+    display:block;
+    width:100%;
+    height:260px;
+    border:none;
+    background:#fff;
+  }
+  .lab-preview .code-out{
+    padding:14px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:#c7cbd6;
+    background:var(--surface-2);
+    border-top:1px solid var(--border);
+    white-space:pre-wrap;
+  }
+  .lab-preview .code-out .k{color:var(--vh);}
+  .lab-preview .code-out .v{color:var(--pc);}
+  .lab-result{
+    margin-top:14px;
+    font-size:14px;
+    padding:12px 16px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--muted);
+  }
+  .lab-result b{color:var(--text);}
+
+  /* --- Section 4: tabela --- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  th,td{
+    text-align:left;
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  th{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:500;
+  }
+  td.prop{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--text);
+    white-space:nowrap;
+  }
+  td.muted{color:var(--muted);}
+
+  /* --- Section 5: armadilhas --- */
+  .pitfall{
+    border:1px solid var(--border);
+    border-left:3px solid var(--danger);
+    border-radius:8px;
+    background:var(--surface);
+    padding:16px 18px;
+    margin-bottom:16px;
+  }
+  .pitfall h4{
+    margin:0 0 6px;
+    font-size:15px;
+  }
+  .pitfall p{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .pitfall code{
+    background:var(--surface-2);
+    padding:2px 6px;
+    border-radius:4px;
+    color:var(--pc);
+    font-size:12.5px;
+  }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="wrap">
+    <p class="kicker mono">aula · unidades de medida em css</p>
+    <h1>vh não é %. E isso muda o layout inteiro.</h1>
+    <p>Duas formas de dizer "ocupe a altura toda" que parecem sinônimas — mas uma depende do elemento pai e a outra depende só da janela do navegador. Essa diferença é o que decide se uma página rola ou não.</p>
+    <div class="legend">
+      <span class="chip vh"><span class="dot"></span>vh, vw — relativo à viewport (a janela)</span>
+      <span class="chip pc"><span class="dot"></span>% — relativo ao elemento pai</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">01 · o experimento</p>
+    <h2>Redimensione o pai e observe quem se mexe</h2>
+    <p class="lead">Os dois blocos abaixo pedem "50% de altura", mas um usa <code class="mono">50%</code> e o outro <code class="mono">50vh</code>. Arraste o controle para mudar a altura do elemento pai (a caixa tracejada).</p>
+
+    <div class="lab-frame">
+      <div class="slider-row">
+        <label for="parentHeight">altura do pai</label>
+        <input type="range" id="parentHeight" min="100" max="500" value="260">
+        <span class="mono" id="parentHeightVal" style="color:var(--muted); font-size:13px;">260px</span>
+      </div>
+      <div class="parent-box" id="parentBox" style="height:260px;">
+        <div class="child-box pc-box" id="pcBox">
+          <div class="label">50%</div>
+          <div class="px" id="pcPx">— px</div>
+        </div>
+        <div class="child-box vh-box" id="vhBox">
+          <div class="label">50vh</div>
+          <div class="px" id="vhPx">— px</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>O que observar:</b> o bloco em <span style="color:var(--pc)">%</span> muda de tamanho junto com o pai — ele é uma fração do pai. O bloco em <span style="color:var(--vh)">vh</span> fica travado no mesmo tamanho em pixels, porque <code class="mono">50vh</code> é sempre metade da altura da janela do navegador, não do pai. É por isso que <code class="mono">height: 100%</code> só funciona se o pai já tiver uma altura definida — e <code class="mono">height: 100vh</code> funciona sempre, porque a viewport sempre tem altura.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">02 · duas abordagens de página</p>
+    <h2>Exemplo A: sem rolagem — Exemplo B: com rolagem</h2>
+    <p class="lead">Mesma estrutura de conteúdo, duas regras diferentes no <code class="mono">html, body</code>. Repare no que acontece com o conteúdo que não cabe.</p>
+
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div class="demo-head">
+          <h3>Exemplo A</h3>
+          <span class="badge no-scroll">sem rolagem</span>
+        </div>
+        <iframe id="demoA" title="Exemplo sem rolagem"></iframe>
+        <pre><span class="k">html, body</span> {
+  height: <span class="v">100vh</span>;
+  margin: 0;
+  overflow: <span class="v">hidden</span>;
+}</pre>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-head">
+          <h3>Exemplo B</h3>
+          <span class="badge scroll">com rolagem</span>
+        </div>
+        <iframe id="demoB" title="Exemplo com rolagem"></iframe>
+        <pre><span class="k">html, body</span> {
+  min-height: <span class="v">100vh</span>;
+  margin: 0;
+}
+<span class="k">.conteudo</span> {
+  /* mais alto que a tela */
+}</pre>
+      </div>
+    </div>
+    <div class="note" style="margin-top:20px;">
+      No Exemplo A, <code class="mono">height: 100vh</code> trava o body no tamanho exato da janela, e <code class="mono">overflow: hidden</code> corta qualquer coisa que ultrapasse isso — o excesso simplesmente some. No Exemplo B, <code class="mono">min-height: 100vh</code> garante que o body pelo menos preencha a tela, mas deixa ele crescer se o conteúdo for maior — e sem <code class="mono">overflow: hidden</code>, o navegador cria a barra de rolagem naturalmente.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">03 · laboratório</p>
+    <h2>Monte sua própria combinação</h2>
+    <p class="lead">Escolha a altura e o overflow do <code class="mono">html, body</code> e veja o resultado ao vivo, com o CSS gerado logo abaixo.</p>
+
+    <div class="lab-controls">
+      <div class="field">
+        <label for="labHeight">height do body</label>
+        <select id="labHeight">
+          <option value="height:100vh;">height: 100vh</option>
+          <option value="height:100%;">height: 100%</option>
+          <option value="min-height:100vh;">min-height: 100vh</option>
+          <option value="height:auto;">height: auto</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="labOverflow">overflow do body</label>
+        <select id="labOverflow">
+          <option value="hidden">hidden</option>
+          <option value="auto" selected>auto</option>
+          <option value="visible">visible</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="labContent">conteúdo</label>
+        <select id="labContent">
+          <option value="short">curto (cabe na tela)</option>
+          <option value="tall" selected>alto (não cabe na tela)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="lab-preview">
+      <iframe id="labFrame" title="Laboratório interativo"></iframe>
+      <div class="code-out" id="labCode"></div>
+    </div>
+    <div class="lab-result" id="labResult"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">04 · referência rápida</p>
+    <h2>Quando usar cada um</h2>
+    <table>
+      <thead>
+        <tr><th>propriedade</th><th>o que faz</th><th>quando usar</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="prop">height: 100vh</td>
+          <td>Trava a altura no tamanho exato da janela do navegador, sempre.</td>
+          <td class="muted">Telas de abertura, landing pages de uma tela só, seções "hero" que devem ocupar a tela inteira.</td>
+        </tr>
+        <tr>
+          <td class="prop">height: 100%</td>
+          <td>Ocupa 100% da altura do elemento pai — só funciona se o pai tiver altura definida.</td>
+          <td class="muted">Layouts aninhados, onde o pai já controla o tamanho (ex: um card dentro de uma grade).</td>
+        </tr>
+        <tr>
+          <td class="prop">min-height: 100vh</td>
+          <td>Garante pelo menos a altura da tela, mas permite crescer além disso.</td>
+          <td class="muted">Páginas de conteúdo normais (blog, formulário, artigo) que devem preencher a tela mesmo com pouco texto, mas rolar se tiverem muito.</td>
+        </tr>
+        <tr>
+          <td class="prop">overflow: hidden</td>
+          <td>Esconde qualquer conteúdo que ultrapasse os limites do elemento.</td>
+          <td class="muted">Apps de tela única (dashboards, jogos, players) onde a rolagem quebraria o layout.</td>
+        </tr>
+        <tr>
+          <td class="prop">overflow: auto</td>
+          <td>Mostra barra de rolagem só quando o conteúdo excede o espaço disponível.</td>
+          <td class="muted">Comportamento padrão recomendado para a maioria das páginas de conteúdo.</td>
+        </tr>
+        <tr>
+          <td class="prop">box-sizing: border-box</td>
+          <td>Inclui padding e borda dentro da largura/altura declarada, em vez de somar por fora.</td>
+          <td class="muted">Praticamente sempre — evita que padding "estoure" um <code class="mono">height: 100vh</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">05 · armadilhas comuns</p>
+    <h2>Onde os alunos costumam travar</h2>
+
+    <div class="pitfall">
+      <h4>"Coloquei height: 100% e não fez nada"</h4>
+      <p><code>%</code> só funciona em relação a um pai com altura definida. Se <code>html</code> e <code>body</code> não tiverem altura declarada, a cadeia de porcentagens não tem de onde puxar valor — e o elemento colapsa.</p>
+    </div>
+
+    <div class="pitfall">
+      <h4>"100vh no celular deixa uma faixa sobrando"</h4>
+      <p>Em navegadores móveis, a barra de endereço aparece e some, e <code>100vh</code> é calculado sobre a altura máxima possível — não a visível no momento. Para esse caso, as unidades mais novas <code>100dvh</code> (dynamic viewport height) resolvem melhor, quando o suporte do navegador permitir.</p>
+    </div>
+
+    <div class="pitfall">
+      <h4>"Coloquei overflow: hidden e sumiu conteúdo importante"</h4>
+      <p><code>overflow: hidden</code> não avisa quando corta algo — ele simplesmente esconde. É uma ferramenta de layout de tela única, não algo para usar "por garantia" em páginas de conteúdo comuns.</p>
+    </div>
+
+    <div class="pitfall">
+      <h4>"Meu padding estourou a altura da tela"</h4>
+      <p>Sem <code>box-sizing: border-box</code>, o padding se soma à altura declarada em vez de ser descontado dela. Um <code>height: 100vh</code> com padding pode passar da tela sem que a regra pareça errada.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker mono">06 · o par que mais confunde</p>
+    <h2>height: 100vh + overflow: auto  vs  min-height: 100vh</h2>
+    <p class="lead">Os dois "resolvem" uma página curta do mesmo jeito. A diferença só aparece quando o conteúdo é maior que a tela — e mesmo assim, é sobre <b>onde</b> a rolagem acontece, não se ela acontece.</p>
+
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div class="demo-head">
+          <h3>height: 100vh + overflow: auto</h3>
+          <span class="badge no-scroll">rolagem interna</span>
+        </div>
+        <iframe id="demoC" title="Exemplo com rolagem interna, caixa travada"></iframe>
+        <pre><span class="k">html</span> {
+  height: <span class="v">100vh</span>;
+  overflow: <span class="v">hidden</span>;
+}
+<span class="k">body</span> {
+  height: <span class="v">100vh</span>;
+  margin: 0;
+  overflow: <span class="v">auto</span>;
+}</pre>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-head">
+          <h3>min-height: 100vh</h3>
+          <span class="badge scroll">rolagem da página</span>
+        </div>
+        <iframe id="demoD" title="Exemplo com rolagem da página inteira"></iframe>
+        <pre><span class="k">html, body</span> {
+  min-height: <span class="v">100vh</span>;
+  margin: 0;
+}</pre>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:20px;">
+      Repare na borda colorida ao redor do conteúdo dentro de cada exemplo — ela marca a caixa do <code class="mono">body</code>.
+      À esquerda, essa borda <b>não se mexe</b>: ela fecha exatamente no tamanho da tela, e é só o conteúdo por dentro dela que rola — como um documento dentro de uma janela de tamanho fixo. À direita, a borda <b>acompanha o conteúdo</b> e continua além da tela: o <code class="mono">body</code> realmente cresceu, e quem rola é a página toda.
+    </div>
+
+    <div class="note" style="margin-top:12px; border-color:#4a3a22;">
+      <b>Pegadinha real:</b> esse comportamento de "caixa travada com rolagem própria" só acontece porque o exemplo da esquerda também define <code class="mono">overflow: hidden</code> no <code class="mono">html</code>. Se você colocar <code class="mono">overflow: auto</code> só no <code class="mono">body</code> e deixar o <code class="mono">html</code> sem overflow declarado, o navegador "propaga" essa rolagem para a página inteira — e o resultado acaba idêntico ao <code class="mono">min-height: 100vh</code>. Isso pega muita gente de surpresa: "coloquei overflow no body e não fez nada diferente".
+    </div>
+
+    <table style="margin-top:24px;">
+      <thead>
+        <tr><th></th><th>height: 100vh + overflow: auto</th><th>min-height: 100vh</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="prop">tamanho do body</td>
+          <td>fixo, sempre 100vh</td>
+          <td>cresce com o conteúdo</td>
+        </tr>
+        <tr>
+          <td class="prop">onde rola</td>
+          <td>dentro da caixa do body</td>
+          <td>a página inteira</td>
+        </tr>
+        <tr>
+          <td class="prop">conteúdo curto</td>
+          <td>preenche a tela, sem rolagem</td>
+          <td>preenche a tela, sem rolagem</td>
+        </tr>
+        <tr>
+          <td class="prop">bom para</td>
+          <td>painel isolado, chat, lista lateral</td>
+          <td>páginas de conteúdo comuns</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  // --- Section 1: parent vs viewport ---
+  const parentBox = document.getElementById('parentBox');
+  const parentHeight = document.getElementById('parentHeight');
+  const parentHeightVal = document.getElementById('parentHeightVal');
+  const pcPx = document.getElementById('pcPx');
+  const vhPx = document.getElementById('vhPx');
+  const pcBox = document.getElementById('pcBox');
+  const vhBox = document.getElementById('vhBox');
+
+  function updateParent(){
+    const h = parentHeight.value;
+    parentBox.style.height = h + 'px';
+    parentHeightVal.textContent = h + 'px';
+    requestAnimationFrame(()=>{
+      pcPx.textContent = Math.round(pcBox.getBoundingClientRect().height) + ' px';
+      vhPx.textContent = Math.round(vhBox.getBoundingClientRect().height) + ' px';
+    });
+  }
+  parentHeight.addEventListener('input', updateParent);
+  window.addEventListener('resize', updateParent);
+  updateParent();
+
+  // --- Section 2: fixed demos A and B ---
+  function tallContent(n){
+    let out = '';
+    for(let i=1;i<=n;i++){
+      out += `<div style="padding:14px;margin-bottom:10px;border-radius:6px;background:#eef1f7;border:1px solid #d7dce6;">Bloco de conteúdo ${i}</div>`;
+    }
+    return out;
+  }
+
+  const baseStyle = `
+    body{font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased;}
+    *{box-sizing:border-box;}
+  `;
+
+  document.getElementById('demoA').srcdoc = `
+    <html><head><style>
+      ${baseStyle}
+      html,body{height:100vh;margin:0;overflow:hidden;padding:14px;}
+    </style></head>
+    <body>${tallContent(8)}</body></html>
+  `;
+
+  document.getElementById('demoB').srcdoc = `
+    <html><head><style>
+      ${baseStyle}
+      html,body{min-height:100vh;margin:0;}
+      body{padding:14px;}
+    </style></head>
+    <body>${tallContent(8)}</body></html>
+  `;
+
+  // --- Section 06: height+overflow:auto vs min-height ---
+  document.getElementById('demoC').srcdoc = `
+    <html><head><style>
+      ${baseStyle}
+      html{height:100vh;overflow:hidden;margin:0;}
+      body{height:100vh;margin:0;overflow:auto;padding:14px;
+           border:4px solid #6FE3C4;box-sizing:border-box;}
+    </style></head>
+    <body>${tallContent(10)}</body></html>
+  `;
+
+  document.getElementById('demoD').srcdoc = `
+    <html><head><style>
+      ${baseStyle}
+      html,body{min-height:100vh;margin:0;}
+      body{padding:14px;border:4px solid #F2A65A;box-sizing:border-box;}
+    </style></head>
+    <body>${tallContent(10)}</body></html>
+  `;
+
+  // --- Section 3: interactive lab ---
+  const labHeight = document.getElementById('labHeight');
+  const labOverflow = document.getElementById('labOverflow');
+  const labContent = document.getElementById('labContent');
+  const labFrame = document.getElementById('labFrame');
+  const labCode = document.getElementById('labCode');
+  const labResult = document.getElementById('labResult');
+
+  function renderLab(){
+    const heightRule = labHeight.value;
+    const overflowVal = labOverflow.value;
+    const nBlocks = labContent.value === 'tall' ? 10 : 2;
+
+    labFrame.srcdoc = `
+      <html><head><style>
+        ${baseStyle}
+        html,body{${heightRule} margin:0; overflow:${overflowVal};}
+        body{padding:14px;}
+      </style></head>
+      <body>${tallContent(nBlocks)}</body></html>
+    `;
+
+    labCode.innerHTML = `<span class="k">html, body</span> {
+  ${heightRule.replace(';','')};
+  margin: 0;
+  overflow: <span class="v">${overflowVal}</span>;
+}`;
+
+    // plain-language explanation of the current combo
+    let explanation = '';
+    const contentFits = labContent.value === 'short';
+
+    if(heightRule.startsWith('height:100vh')){
+      if(overflowVal === 'hidden'){
+        explanation = contentFits
+          ? '<b>Resultado:</b> a tela fica travada na altura da janela. Como o conteúdo é curto, não há corte visível — mas se ele crescesse, seria cortado sem aviso.'
+          : '<b>Resultado:</b> a altura está travada em 100vh e o excesso está sendo cortado silenciosamente. O conteúdo depois do corte existe no HTML, mas não aparece.';
+      } else if(overflowVal === 'auto'){
+        explanation = contentFits
+          ? '<b>Resultado:</b> altura travada em 100vh, sem excesso — nenhuma barra de rolagem aparece.'
+          : '<b>Resultado:</b> a altura está travada em 100vh, mas como overflow é auto, o navegador cria uma barra de rolagem em vez de cortar o conteúdo.';
+      } else {
+        explanation = '<b>Resultado:</b> com overflow visible, o conteúdo que ultrapassa 100vh continua aparecendo fora da caixa, sem gerar rolagem — geralmente não é o que se quer.';
+      }
+    } else if(heightRule.startsWith('height:100%')){
+      explanation = '<b>Resultado:</b> como o pai (o próprio iframe) tem uma altura definida pelo navegador, 100% funciona de forma parecida com 100vh aqui — mas em uma página normal, sem um pai com altura declarada, isso colapsaria.';
+    } else if(heightRule.startsWith('min-height:100vh')){
+      explanation = contentFits
+        ? '<b>Resultado:</b> o body preenche a tela toda mesmo com pouco conteúdo, porque min-height garante o mínimo — sem sobrar espaço em branco estranho nem cortar nada.'
+        : '<b>Resultado:</b> o body cresce além da tela para caber todo o conteúdo, e a rolagem aparece naturalmente quando overflow não é hidden.';
+    } else {
+      explanation = '<b>Resultado:</b> sem altura definida, o body simplesmente cresce (ou encolhe) até caber exatamente o conteúdo — o comportamento padrão do HTML.';
+    }
+
+    labResult.innerHTML = explanation;
+  }
+
+  [labHeight, labOverflow, labContent].forEach(el => el.addEventListener('change', renderLab));
+  renderLab();
+</script>
+
+</body>
+</html>

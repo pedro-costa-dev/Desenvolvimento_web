@@ -1,0 +1,71 @@
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+html,body{
+    height: 100%;
+}
+
+body{
+    height: 100vh;
+    
+    
+}
+
+main{
+    height: 70vh;
+    background-color: blue;
+    
+    justify-content: center;
+    
+}
+footer , header{
+    height: 15vh;
+    background-color: violet;
+}
+
+.container-cards {
+    display: flex;         /* Coloca os itens lado a lado */
+    gap: 20px;             /* Espaço entre os cards */
+    list-style: none;      /* Remove as bolinhas da lista (<ul>) */
+    padding: 20px;
+    justify-content: center; /* Centraliza os cards na tela */
+    align-items: center;
+}
+
+/* Estilo de cada Card */
+.card {
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    width: 250px;   
+    height: 50vh;        /* Largura de cada card */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+
+@media (max-width: 768px) {
+    /* Faz o main se adaptar à altura do conteúdo se os cards não couberem */
+    main {
+        height: auto;
+        min-height: 70vh;
+        padding: 20px 0;
+    }
+
+    /* Muda a direção dos cards de horizontal (linha) para vertical (coluna) */
+    .container-cards {
+        flex-direction: column;
+        align-items: center;  /* Centraliza os cards */
+        width: 100%;
+    }
+
+    /* Ajusta a largura do card para ocupar quase toda a tela do celular */
+    .card {
+        width: 90%;
+        max-width: 350px;
+    }
+}
