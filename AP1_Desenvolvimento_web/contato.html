@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="style.css">
+    <title>AP1</title>
+</head>
+<body>
+    <!-- Requisito 2: Header com logo a partir de imagem local e nav comum -->
+    <!-- Requisito 6: Header responsivo com logo + razão social à esquerda e nav à direita -->
+    <header>
+        <div class="razao-social">
+             <!-- Requisito 10: Imagem local organizada na subpasta imagens -->
+            <img src="imagens_locais/Logo.jpg" alt="Logo do restaurante" class="posi-logo" >
+            <h1>Restaurante PC oniguiris</h1>
+        </div>
+
+        <nav>
+            <!-- Requisito 1: Três páginas HTML interligadas através do menu nav -->
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a style="color: black;" href="contato.html">Contato</a></li>
+                <li><a href="serviços.html">Serviços</a></li>
+            </ul>
+        </nav> 
+    </header>
+
+    <main id="main-contato">
+        <!-- Requisito 5: Formulário HTML com inputs de nome, email e submit com labels pareadas, centralizado e com validação básica -->
+        <form action="sucesso.html">
+            <h2>Entre em contato conosco!</h2>
+            <div class="wrapper">
+                <label for="nome-user">Nome</label>
+                <input type="text" name="nome-user"  id="nome-user" required minlength="3">
+            </div>
+            <div class="wrapper">
+                <label for="email-user">Email</label>
+                <input type="email" name="email-user" id="email-user" required>
+            </div>         
+            <input id="button" type="submit" value="Enviar">
+        </form>
+    </main>
+
+    <footer>
+        <!-- Requisito 4: Footer comum com direitos autorais e estrutura para 3 redes sociais com Font Awesome -->
+        <p>&copy;  Pedro Costa. Todos os direitos reservados <time datetime="2026">2026</time> </p>
+         <ul class="rede-social">
+            <li><a href="#"aria-label="facebook"><i class="fa-brands fa-facebook"></i></a></li>
+            <li><a href="#"aria-label="instagram"><i class="fa-brands fa-instagram"></i></a></li>
+            <li><a href="#"aria-label="Whatsapp"><i class="fa-brands fa-whatsapp"></i></a></li>
+        </ul>
+    </footer>
+</body>
+</html>
