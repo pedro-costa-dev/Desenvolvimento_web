@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tarefa 2</title>
+</head>
+<body>
+    <header>
+        <h1>Envie suas opiniões sobre a página pessoal de Pedro costa</h1>
+    </header>
+    <main>
+        <form action="#">
+            <label for="name">Nome</label>
+            <input type="text" id="name" name="name">
+            <br>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email">
+            
+            <fieldset>
+                <legend>Como você encontrou minha página?</legend>
+                <label for="encontrei">Encontrei aqui:</label>
+                <select name="encontrei" id="encontrei">
+                    <option value="Google">Google</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Amigo">Amigo</option>
+                    <option value="Whatsapp">Whatsapp</option>
+                </select>
+            </fieldset>
+
+            <fieldset>
+                <legend>Você gostou da minha pagina?</legend>
+                <label for="sim">sim</label>
+                <input type="radio" id="sim" name="gostou" value="sim">
+                <label for="nao">nao</label>
+                <input type="radio" name="gostou" id="nao" value="nao">
+                <label for="nao-sei-bem">nao sei bem</label>
+                <input type="radio" name="gostou" id="nao-sei-bem" value="nao-sei-bem">
+            </fieldset>
+
+            <fieldset>
+                <legend>O que mais te atraiu em minha pagina?</legend>
+                <label for="design">design</label>
+                <input type="checkbox" name="design" id="design" value="design">
+                <label for="Facilidade-uso">Facilidade de uso</label>
+                <input type="checkbox" name="Facilidade-uso" id="Facilidade-uso" value="facilidade-uso">
+                <label for="midias">midias</label>
+                <input type="checkbox" name="midias" id="midias" value="midias">
+                <label for="conteudo">conteudo</label>
+                <input type="checkbox" name="conteudo" id="conteudo" value="conteudo">
+            </fieldset>
+            
+            <input type="submit" value="Enviar">
+            <input type="reset" value="limpar o form">
+        </form>
+        <br>
+
+
+        <section>
+            <h3>Midias</h3>
+            <video  controls width="250">
+                <source src="/midias/video.mp4" type="video/mp4">
+                <source src="/midias/video2.webm" type="video/webm">
+                Seu navegador nao suporta a exibição deste video
+            </video>
+
+            <audio controls>
+                <source src="/midias/audio.mpeg" type="audio/mpeg">
+                <source src="/midias/audio2.mp3" type="audio/mpeg"> 
+                Seu navegador nao suporta a reprodução deste audio       
+            </audio>
+        </section>
+    </main>
+</body>
+</html>
